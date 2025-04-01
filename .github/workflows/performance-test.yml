@@ -6,35 +6,44 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: '0 */6 * * *'  # Run every 6 hours
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22.x'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: |
-        npm install
-    
-    - name: Run performance tests
-      run: |
-        cd tests/stock-tests
-        npm test
-      env:
-        NODE_ENV: test
-
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      with:
-        name: performance-test-results
-        path: tests/stock-tests/test-results.txt
-        retention-days: 30 
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Run stock API performance tests
+        run: npm test
+        working-directory: tests/stock-tests
+        env:
+          NODE_ENV: test
+          
+      - name: Run ESG API performance tests
+        run: npm test
+        working-directory: tests/esg-tests
+        env:
+          NODE_ENV: test
+          
+      - name: Upload stock API test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: stock-api-test-results
+          path: tests/stock-tests/test-results.txt
+          retention-days: 30
+          
+      - name: Upload ESG API test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: esg-api-test-results
+          path: tests/esg-tests/test-results.txt
+          retention-days: 30 
