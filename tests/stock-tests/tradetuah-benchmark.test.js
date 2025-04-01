@@ -10,36 +10,6 @@ function writeResult(testName, time, status) {
     fs.appendFileSync(path.join(__dirname, 'test-results.txt'), result);
 }
 
-// Helper function to make request with retry
-async function makeRequest(method, url, data = null, config = {}) {
-    const maxRetries = 3;
-    let lastError;
-    
-    for (let i = 0; i < maxRetries; i++) {
-        try {
-            const start = performance.now();
-            const response = await axios({
-                method,
-                url,
-                data,
-                ...config
-            });
-            const end = performance.now();
-            return {
-                time: end - start,
-                status: response.status,
-                data: response.data
-            };
-        } catch (error) {
-            lastError = error;
-            if (i < maxRetries - 1) {
-                await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
-            }
-        }
-    }
-    throw lastError;
-}
-
 describe('Stock API Performance Tests', () => {
   const testSymbol = 'AAPL';
 
@@ -49,43 +19,61 @@ describe('Stock API Performance Tests', () => {
   });
 
   test('Overview endpoint performance', async () => {
-    const result = await makeRequest('get', `${apiEndpoint}/overview/${testSymbol}`);
-    console.log(`Overview endpoint took ${result.time}ms (Status: ${result.status})`);
-    writeResult('Overview endpoint', result.time, result.status);
+    const start = performance.now();
+    const response = await axios.get(`${apiEndpoint}/overview/${testSymbol}`);
+    const end = performance.now();
+    const time = end - start;
+    console.log(`Overview endpoint took ${time}ms (Status: ${response.status})`);
+    writeResult('Overview endpoint', time, response.status);
   });
 
   test('Price endpoint performance', async () => {
-    const result = await makeRequest('get', `${apiEndpoint}/price/${testSymbol}`);
-    console.log(`Price endpoint took ${result.time}ms (Status: ${result.status})`);
-    writeResult('Price endpoint', result.time, result.status);
+    const start = performance.now();
+    const response = await axios.get(`${apiEndpoint}/price/${testSymbol}`);
+    const end = performance.now();
+    const time = end - start;
+    console.log(`Price endpoint took ${time}ms (Status: ${response.status})`);
+    writeResult('Price endpoint', time, response.status);
   });
 
   test('Options endpoint performance', async () => {
-    const result = await makeRequest('get', `${apiEndpoint}/options/${testSymbol}`);
-    console.log(`Options endpoint took ${result.time}ms (Status: ${result.status})`);
-    writeResult('Options endpoint', result.time, result.status);
+    const start = performance.now();
+    const response = await axios.get(`${apiEndpoint}/options/${testSymbol}`);
+    const end = performance.now();
+    const time = end - start;
+    console.log(`Options endpoint took ${time}ms (Status: ${response.status})`);
+    writeResult('Options endpoint', time, response.status);
   });
 
   test('Fundamentals endpoint performance', async () => {
-    const result = await makeRequest('get', `${apiEndpoint}/fundamentals/${testSymbol}`);
-    console.log(`Fundamentals endpoint took ${result.time}ms (Status: ${result.status})`);
-    writeResult('Fundamentals endpoint', result.time, result.status);
+    const start = performance.now();
+    const response = await axios.get(`${apiEndpoint}/fundamentals/${testSymbol}`);
+    const end = performance.now();
+    const time = end - start;
+    console.log(`Fundamentals endpoint took ${time}ms (Status: ${response.status})`);
+    writeResult('Fundamentals endpoint', time, response.status);
   });
 
   test('Historical data endpoint performance', async () => {
-    const result = await makeRequest('get', `${apiEndpoint}/historical/${encodeURIComponent(testSymbol)}`);
-    console.log(`Historical data endpoint took ${result.time}ms (Status: ${result.status})`);
-    writeResult('Historical data endpoint', result.time, result.status);
+    const start = performance.now();
+    const response = await axios.get(`${apiEndpoint}/historical/${encodeURIComponent(testSymbol)}`);
+    const end = performance.now();
+    const time = end - start;
+    console.log(`Historical data endpoint took ${time}ms (Status: ${response.status})`);
+    writeResult('Historical data endpoint', time, response.status);
   });
 
   test('Earnings endpoint performance', async () => {
-    const result = await makeRequest('post', `${apiEndpoint}/earnings/${testSymbol}`, null, {
+    const start = performance.now();
+    const response = await axios.post(`${apiEndpoint}/earnings/${testSymbol}`, null, {
       params: {
         quarters: '4'
       }
     });
-    console.log(`Earnings endpoint took ${result.time}ms (Status: ${result.status})`);
-    writeResult('Earnings endpoint', result.time, result.status);
+    const end = performance.now();
+    const time = end - start;
+    console.log(`Earnings endpoint took ${time}ms (Status: ${response.status})`);
+    writeResult('Earnings endpoint', time, response.status);
   });
 
   // Test concurrent requests
@@ -97,10 +85,14 @@ describe('Stock API Performance Tests', () => {
     ];
 
     const start = performance.now();
-    const results = await Promise.all(endpoints.map(endpoint => makeRequest('get', endpoint)));
+    const responses = await Promise.all(endpoints.map(endpoint => axios.get(endpoint)));
     const end = performance.now();
     const totalTime = end - start;
-    const avgTime = results.reduce((sum, r) => sum + r.time, 0) / results.length;
+    const times = responses.map((_, index) => {
+      const responseStart = start + (index * (end - start) / endpoints.length);
+      return end - responseStart;
+    });
+    const avgTime = times.reduce((sum, t) => sum + t, 0) / times.length;
     
     console.log(`Concurrent requests took ${totalTime}ms (Average: ${avgTime.toFixed(2)}ms)`);
     writeResult('Concurrent requests', totalTime, `Avg: ${avgTime.toFixed(2)}ms`);

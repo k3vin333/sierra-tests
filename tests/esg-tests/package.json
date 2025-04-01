@@ -1,0 +1,14 @@
+{
+  "name": "esg-benchmark",
+  "version": "1.0.0",
+  "description": "Performance tests for ESG API endpoints",
+  "main": "esg-benchmark.test.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "jest": "^29.7.0"
+  }
+} 
