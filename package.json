@@ -4,6 +4,6 @@
   "description": "Performance test suite for stock API",
   "private": true,
   "workspaces": [
-    "tests/esg-tests"
+    "tests/stock-tests"
   ]
 } 

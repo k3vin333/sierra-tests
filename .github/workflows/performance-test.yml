@@ -27,7 +27,7 @@ jobs:
     
     - name: Run performance tests
       run: |
-        cd tests/esg-tests
+        cd tests/stock-tests
         npm test
       env:
         NODE_ENV: test
@@ -36,5 +36,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: performance-test-results
-        path: tests/esg-tests/test-results.txt
+        path: tests/stock-tests/test-results.txt
         retention-days: 30 
