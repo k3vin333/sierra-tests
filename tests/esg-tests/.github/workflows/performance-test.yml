@@ -1,4 +1,4 @@
-name: Stock API Performance Tests
+name: SENG3011 Performance Test
 
 on:
   push:

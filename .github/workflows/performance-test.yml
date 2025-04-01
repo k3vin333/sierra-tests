@@ -1,4 +1,4 @@
-name: Stock API Performance Tests
+name: SENG3011 Performance Test
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
     
     - name: Install dependencies
       run: |
-        npm ci
+        npm install
     
     - name: Run performance tests
       run: |
