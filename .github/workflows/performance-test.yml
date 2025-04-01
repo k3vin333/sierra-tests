@@ -30,4 +30,11 @@ jobs:
         cd tests/esg-tests
         npm test
       env:
-        NODE_ENV: test 
+        NODE_ENV: test
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-test-results
+        path: tests/esg-tests/test-results.txt
+        retention-days: 30 
