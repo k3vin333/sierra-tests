@@ -19,8 +19,16 @@ jobs:
         with:
           node-version: '22.x'
           
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm install
+        
+      - name: Install stock API test dependencies
+        run: npm install
+        working-directory: tests/stock-tests
+        
+      - name: Install ESG API test dependencies
+        run: npm install
+        working-directory: tests/esg-tests
         
       - name: Run stock API performance tests
         run: npm test
