@@ -1,0 +1,9 @@
+{
+  "name": "sierra-tests",
+  "version": "1.0.0",
+  "description": "Performance test suite for stock API",
+  "private": true,
+  "workspaces": [
+    "tests/esg-tests"
+  ]
+} 

@@ -23,7 +23,6 @@ jobs:
     
     - name: Install dependencies
       run: |
-        cd tests/esg-tests
         npm ci
     
     - name: Run performance tests
