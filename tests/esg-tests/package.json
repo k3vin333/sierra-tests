@@ -1,0 +1,14 @@
+{
+  "name": "tradetuah-benchmark",
+  "version": "1.0.0",
+  "description": "Performance tests for stock API endpoints",
+  "main": "tradetuah-benchmark.test.js",
+  "scripts": {
+    "test": "jest --no-timeout --testTimeout=30000",
+    "test:watch": "jest --watch --no-timeout --testTimeout=30000"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "jest": "^29.7.0"
+  }
+} 
