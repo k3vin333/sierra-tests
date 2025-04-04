@@ -6,7 +6,8 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    - cron: '0 */6 * * *'  # Run every 6 hours
+    # Runs the test every 6 hours
+    - cron: '0 */6 * * *'
 
 jobs:
   test:
@@ -48,7 +49,7 @@ jobs:
           echo "**Generated on:** $(date)" >> combined-results.md
           echo "" >> combined-results.md
           echo "## Test Environment" >> combined-results.md
-          echo "- GitHub Actions Runner (Ubuntu Latest)" >> combined-results.md
+          echo "- GitHub Actions Runner (Uses Ubuntu Latest)" >> combined-results.md
           echo "- Node.js v22.x" >> combined-results.md
           echo "" >> combined-results.md
           
@@ -72,18 +73,20 @@ jobs:
           echo '```' >> combined-results.md
           echo "" >> combined-results.md
           
-          echo "## Known Issues" >> combined-results.md
-          echo "Some endpoints are currently experiencing issues:" >> combined-results.md
+          echo "## Potential errors" >> combined-results.md
+          echo "Some endpoints may experience errors at any point of testing:" >> combined-results.md
+          echo "This is due to the API endpoint being modified or the API being down for any reason." >> combined-results.md
           echo "" >> combined-results.md
           echo "### Stock API" >> combined-results.md
           echo "- **Historical data endpoint**: May return 500 error" >> combined-results.md
           echo "- **Earnings endpoint**: May return 500 error" >> combined-results.md
           echo "" >> combined-results.md
-          echo "These errors are being tracked and do not indicate a problem with the testing framework itself." >> combined-results.md
+          echo "These errors are being handled through a catch block and do not indicate a problem with the testing framework itself." >> combined-results.md
+          echo "These errors are could be due to the API endpoint being modified or the API being down for any reason." >> combined-results.md
           echo "" >> combined-results.md
           
           echo "## Functionality Testing" >> combined-results.md
-          echo "The automated tests not only measure performance but also verify API functionality:" >> combined-results.md
+          echo "The automated tests measure both performance and functionality:" >> combined-results.md
           echo "" >> combined-results.md
           
           echo "### Stock API Functionality" >> combined-results.md
@@ -108,18 +111,11 @@ jobs:
           echo "" >> combined-results.md
           
           echo "## Performance Analysis" >> combined-results.md
-          echo "- Response times above 1000ms may indicate performance issues" >> combined-results.md
+          echo "- Response times above 1000ms may indicate performance issues, but this is expected due to the nature of the API." >> combined-results.md
           echo "- Historical responses typically take longer due to data volume" >> combined-results.md
-          echo "- Search endpoints may vary based on query complexity" >> combined-results.md
-          echo "- Endpoints are tested individually and concurrently to evaluate both scenarios" >> combined-results.md
+          echo "- Search endpoints may vary based on query complexity or query fields" >> combined-results.md
+          echo "- Endpoints are tested individually and concurrently to simulate a real-world scenario" >> combined-results.md
           echo "" >> combined-results.md
-          
-          echo "## Recommendations" >> combined-results.md
-          echo "- Monitor trends over time for each endpoint" >> combined-results.md
-          echo "- Investigate any consistent increases in response time" >> combined-results.md
-          echo "- Compare local vs. GitHub Actions performance" >> combined-results.md
-          echo "- Review endpoints that fail functionality tests" >> combined-results.md
-          echo "- Consider implementing caching for frequently accessed data" >> combined-results.md
 
       - name: Setup Pandoc
         uses: r-lib/actions/setup-pandoc@v2
