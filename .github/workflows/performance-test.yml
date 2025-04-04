@@ -41,17 +41,86 @@ jobs:
         working-directory: tests/esg-tests
         env:
           NODE_ENV: test
+      
+      - name: Create combined Markdown report
+        run: |
+          echo "# API Performance and Functionality Test Report" > combined-results.md
+          echo "**Generated on:** $(date)" >> combined-results.md
+          echo "" >> combined-results.md
+          echo "## Test Environment" >> combined-results.md
+          echo "- GitHub Actions Runner (Ubuntu Latest)" >> combined-results.md
+          echo "- Node.js v22.x" >> combined-results.md
+          echo "" >> combined-results.md
           
-      - name: Upload stock API test results
+          echo "## Stock API Results" >> combined-results.md
+          echo '```' >> combined-results.md
+          cat tests/stock-tests/test-results.txt >> combined-results.md || echo "No results available" >> combined-results.md
+          echo '```' >> combined-results.md
+          echo "" >> combined-results.md
+          
+          echo "## ESG API Results" >> combined-results.md
+          echo '```' >> combined-results.md
+          cat tests/esg-tests/test-results.txt >> combined-results.md || echo "No results available" >> combined-results.md
+          echo '```' >> combined-results.md
+          echo "" >> combined-results.md
+          
+          echo "## Functionality Testing" >> combined-results.md
+          echo "The automated tests not only measure performance but also verify API functionality:" >> combined-results.md
+          echo "" >> combined-results.md
+          
+          echo "### Stock API Functionality" >> combined-results.md
+          echo "- **Overview endpoint**: Returns basic company information and summary" >> combined-results.md
+          echo "- **Price endpoint**: Returns current and historical price data" >> combined-results.md
+          echo "- **Options endpoint**: Returns options chain data" >> combined-results.md
+          echo "- **Fundamentals endpoint**: Returns key financial metrics" >> combined-results.md
+          echo "- **Historical data endpoint**: Returns detailed time-series data" >> combined-results.md
+          echo "- **Earnings endpoint**: Returns quarterly earnings results" >> combined-results.md
+          echo "" >> combined-results.md
+          echo "Success criteria: Each endpoint returns HTTP 200 with valid JSON data structure" >> combined-results.md
+          echo "" >> combined-results.md
+          
+          echo "### ESG API Functionality" >> combined-results.md
+          echo "- **All ESG data endpoint**: Returns comprehensive dataset" >> combined-results.md
+          echo "- **Company-specific ESG endpoint**: Returns ESG metrics for a specific ticker" >> combined-results.md
+          echo "- **Score range search endpoint**: Returns companies within specified ESG score range" >> combined-results.md
+          echo "- **ESG level search endpoint**: Returns companies with specified ESG grade" >> combined-results.md
+          echo "- **Company name search endpoint**: Returns ESG data for companies matching search term" >> combined-results.md
+          echo "" >> combined-results.md
+          echo "Success criteria: Each endpoint returns HTTP 200 with correctly structured data" >> combined-results.md
+          echo "" >> combined-results.md
+          
+          echo "## Performance Analysis" >> combined-results.md
+          echo "- Response times above 1000ms may indicate performance issues" >> combined-results.md
+          echo "- Historical responses typically take longer due to data volume" >> combined-results.md
+          echo "- Search endpoints may vary based on query complexity" >> combined-results.md
+          echo "- Endpoints are tested individually and concurrently to evaluate both scenarios" >> combined-results.md
+          echo "" >> combined-results.md
+          
+          echo "## Recommendations" >> combined-results.md
+          echo "- Monitor trends over time for each endpoint" >> combined-results.md
+          echo "- Investigate any consistent increases in response time" >> combined-results.md
+          echo "- Compare local vs. GitHub Actions performance" >> combined-results.md
+          echo "- Review endpoints that fail functionality tests" >> combined-results.md
+          echo "- Consider implementing caching for frequently accessed data" >> combined-results.md
+
+      - name: Setup Pandoc
+        uses: r-lib/actions/setup-pandoc@v2
+        
+      - name: Convert Markdown to PDF
+        run: pandoc combined-results.md -o performance-report.pdf
+          
+      - name: Upload individual test results
         uses: actions/upload-artifact@v4
         with:
-          name: stock-api-test-results
-          path: tests/stock-tests/test-results.txt
+          name: test-results
+          path: |
+            tests/stock-tests/test-results.txt
+            tests/esg-tests/test-results.txt
           retention-days: 30
           
-      - name: Upload ESG API test results
+      - name: Upload PDF report
         uses: actions/upload-artifact@v4
         with:
-          name: esg-api-test-results
-          path: tests/esg-tests/test-results.txt
+          name: performance-report
+          path: performance-report.pdf
           retention-days: 30 
