@@ -90,3 +90,54 @@ describe('ESG API Performance Tests', () => {
     writeResult('Concurrent requests', totalTime, `Avg: ${avgTime.toFixed(2)}ms`);
   });
 }); 
+
+describe('Integration Testing', () => {
+  beforeAll(() => {
+    // Clear previous results
+    fs.writeFileSync(path.join(__dirname, 'test-results.txt'), '');
+  });
+
+  test('Check the link between company-search and finding all the ESG data for that company', async () => {    
+    const response1 = await axios.get(`${apiEndpoint}/search/company/disney`);
+    // Check to see the correct response is found from the database
+    expect(response1.status).toBe(200);
+    expect(response1.data.companies[0].company_name).toStrictEqual('The Walt Disney Company');
+
+    const ticker = response1.data.companies[0].ticker;
+    const response2 = await axios.get(`${apiEndpoint}/esg/${ticker}`);
+    expect(response2.status).toBe(200);
+    expect(response2.data).toBeInstanceOf(Object);
+  });
+
+  test('Check rating translates to scores correctly', async () => {    
+    const rating = 'C';
+    const min = 20;
+    const max = 30;
+
+    const response1 = await axios.get(`${apiEndpoint}/search/level/total_level/${rating}`);
+    expect(response1.status).toBe(200);
+
+    // Finds one of the expected objects to be in the score search
+    const company = {};
+    company.ticker = response1.data.companies[0].ticker;
+    company.company_name = response1.data.companies[0].company_name;
+    company.score = response1.data.companies[0].total_score;
+    company.timestamp = response1.data.companies[0].timestamp;
+
+    // Ensures the rating correlates to the correct score range
+    expect(company.score).toBeGreaterThanOrEqual(min);
+    expect(company.score).toBeLessThanOrEqual(max);
+
+    const response2 = await axios.get(`${apiEndpoint}/search/score/total_score/${min}/${max}`);
+    expect(response2.status).toBe(200);
+    
+    // Checks that the returned array contains the company found by the rating search
+    expect(response2.data.validCompanies).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining(
+          company
+        )
+      ])
+    );
+  });
+});
