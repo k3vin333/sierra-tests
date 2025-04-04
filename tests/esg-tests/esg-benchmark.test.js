@@ -89,4 +89,109 @@ describe('ESG API Performance Tests', () => {
     console.log(`Concurrent requests took ${totalTime}ms (Average: ${avgTime.toFixed(2)}ms)`);
     writeResult('Concurrent requests', totalTime, `Avg: ${avgTime.toFixed(2)}ms`);
   });
+
+  test('Integration Testing: Check the link between company-search and finding all the ESG data for that company', async () => {    
+    const start = performance.now();
+
+    const response1 = await axios.get(`${apiEndpoint}/search/company/disney`);
+    // Check to see the correct response is found from the database
+    expect(response1.status).toBe(200);
+    expect(response1.data.companies[0].company_name).toStrictEqual('The Walt Disney Company');
+
+    const ticker = response1.data.companies[0].ticker;
+    const response2 = await axios.get(`${apiEndpoint}/esg/${ticker}`);
+    expect(response2.status).toBe(200);
+    expect(response2.data).toBeInstanceOf(Object);
+
+    const end = performance.now();
+    const time = end - start;
+    console.log(`Finding ticker from company search took ${time}ms (Status: ${response2.status})`);
+    writeResult('Integration: Finding ticker from company search', time, response2.status);
+  });
+
+  test('Integration Testing: Check rating translates to scores correctly', async () => {   
+    const start = performance.now(); 
+    const rating = 'C';
+    const min = 20;
+    const max = 30;
+
+    const response1 = await axios.get(`${apiEndpoint}/search/level/total_level/${rating}`);
+    expect(response1.status).toBe(200);
+
+    // Finds one of the expected objects to be in the score search
+    const company = {};
+    company.ticker = response1.data.companies[0].ticker;
+    company.company_name = response1.data.companies[0].company_name;
+    company.score = response1.data.companies[0].total_score;
+    company.timestamp = response1.data.companies[0].timestamp;
+
+    // Ensures the rating correlates to the correct score range
+    expect(company.score).toBeGreaterThanOrEqual(min);
+    expect(company.score).toBeLessThanOrEqual(max);
+
+    const response2 = await axios.get(`${apiEndpoint}/search/score/total_score/${min}/${max}`);
+    expect(response2.status).toBe(200);
+    
+    // Checks that the returned array contains the company found by the rating search
+    expect(response2.data.validCompanies).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining(
+          company
+        )
+      ])
+    );
+
+    const end = performance.now();
+    const time = end - start;
+    console.log(`Checking relationship between score and rating took ${time}ms (Status: ${response2.status})`);
+    writeResult('Integration: Checking relationship between score and rating', time, response2.status);
+  });
+
+  test('End-to-End Testing: User wants to search for the ESG data for McDonald\'s without knowing the ticker', async () => {
+    const start = performance.now(); 
+
+    // User tries various ways to use company name.
+    let response = await axios.get(`${apiEndpoint}/search/company/mcdonald`);
+    expect(response.status).toBe(200);
+    expect(response.data.companies[0].ticker).toEqual('mcd');
+
+    try {
+      response = await axios.get(`${apiEndpoint}/search/company/maccas`);
+    } catch (err) {
+      expect(err.response.status).toBe(404);
+      expect(err.response.data).toEqual({'message': 'Company not found'});
+    }
+
+    response = await axios.get(`${apiEndpoint}/search/company/MCD`);
+    expect(response.status).toBe(200);
+    expect(response.data.companies[0].ticker).toEqual('mcd');
+
+    const end = performance.now();
+    const time = end - start;
+    console.log(`User searching for ESG data without knowing ticker took ${time}ms (Status: ${response.status})`);
+    writeResult('E2E: User searching for ESG data without knowing ticker', time, response.status);
+    
+  });    
+
+  test('End-to-End Testing: User wants to search for the current stock price of a particular company', async () => {
+    const apiEndpointStock = 'https://8a38hm2y70.execute-api.ap-southeast-2.amazonaws.com/v1/stocks';
+    const start = performance.now(); 
+
+    let response = await axios.get(`${apiEndpoint}/search/company/disney`);
+    expect(response.status).toBe(200);
+    expect(response.data.companies[0].ticker).toEqual('dis');
+    const ticker = response.data.companies[0].ticker;
+
+    response = await axios.get(`${apiEndpoint}/esg/${ticker}`);
+    expect(response.status).toBe(200);
+
+    response = await axios.get(`${apiEndpointStock}/overview/${ticker}`);
+    expect(response.status).toBe(200);
+    expect(response.data.currentPrice).toBe(88.84);
+
+    const end = performance.now();
+    const time = end - start;
+    console.log(`User searching for current stock price of a company took ${time}ms (Status: ${response.status})`);
+    writeResult('E2E: User searching for current stock price of a company', time, response.status);    
+  });    
 }); 
