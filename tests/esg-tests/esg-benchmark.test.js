@@ -89,15 +89,10 @@ describe('ESG API Performance Tests', () => {
     console.log(`Concurrent requests took ${totalTime}ms (Average: ${avgTime.toFixed(2)}ms)`);
     writeResult('Concurrent requests', totalTime, `Avg: ${avgTime.toFixed(2)}ms`);
   });
-}); 
 
-describe('Integration Testing', () => {
-  beforeAll(() => {
-    // Clear previous results
-    fs.writeFileSync(path.join(__dirname, 'test-results.txt'), '');
-  });
+  test('Integration Testing: Check the link between company-search and finding all the ESG data for that company', async () => {    
+    const start = performance.now();
 
-  test('Check the link between company-search and finding all the ESG data for that company', async () => {    
     const response1 = await axios.get(`${apiEndpoint}/search/company/disney`);
     // Check to see the correct response is found from the database
     expect(response1.status).toBe(200);
@@ -107,9 +102,15 @@ describe('Integration Testing', () => {
     const response2 = await axios.get(`${apiEndpoint}/esg/${ticker}`);
     expect(response2.status).toBe(200);
     expect(response2.data).toBeInstanceOf(Object);
+
+    const end = performance.now();
+    const time = end - start;
+    console.log(`Finding ticker from company search took ${time}ms (Status: ${response2.status})`);
+    writeResult('Integration: Finding ticker from company search', time, response2.status);
   });
 
-  test('Check rating translates to scores correctly', async () => {    
+  test('Integration Testing: Check rating translates to scores correctly', async () => {   
+    const start = performance.now(); 
     const rating = 'C';
     const min = 20;
     const max = 30;
@@ -139,5 +140,58 @@ describe('Integration Testing', () => {
         )
       ])
     );
+
+    const end = performance.now();
+    const time = end - start;
+    console.log(`Checking relationship between score and rating took ${time}ms (Status: ${response2.status})`);
+    writeResult('Integration: Checking relationship between score and rating', time, response2.status);
   });
-});
+
+  test('End-to-End Testing: User wants to search for the ESG data for McDonald\'s without knowing the ticker', async () => {
+    const start = performance.now(); 
+
+    // User tries various ways to use company name.
+    let response = await axios.get(`${apiEndpoint}/search/company/mcdonald`);
+    expect(response.status).toBe(200);
+    expect(response.data.companies[0].ticker).toEqual('mcd');
+
+    try {
+      response = await axios.get(`${apiEndpoint}/search/company/maccas`);
+    } catch (err) {
+      expect(err.response.status).toBe(404);
+      expect(err.response.data).toEqual({'message': 'Company not found'});
+    }
+
+    response = await axios.get(`${apiEndpoint}/search/company/MCD`);
+    expect(response.status).toBe(200);
+    expect(response.data.companies[0].ticker).toEqual('mcd');
+
+    const end = performance.now();
+    const time = end - start;
+    console.log(`User searching for ESG data without knowing ticker took ${time}ms (Status: ${response.status})`);
+    writeResult('E2E: User searching for ESG data without knowing ticker', time, response.status);
+    
+  });    
+
+  test('End-to-End Testing: User wants to search for the current stock price of a particular company', async () => {
+    const apiEndpointStock = 'https://8a38hm2y70.execute-api.ap-southeast-2.amazonaws.com/v1/stocks';
+    const start = performance.now(); 
+
+    let response = await axios.get(`${apiEndpoint}/search/company/disney`);
+    expect(response.status).toBe(200);
+    expect(response.data.companies[0].ticker).toEqual('dis');
+    const ticker = response.data.companies[0].ticker;
+
+    response = await axios.get(`${apiEndpoint}/esg/${ticker}`);
+    expect(response.status).toBe(200);
+
+    response = await axios.get(`${apiEndpointStock}/overview/${ticker}`);
+    expect(response.status).toBe(200);
+    expect(response.data.currentPrice).toBe(88.84);
+
+    const end = performance.now();
+    const time = end - start;
+    console.log(`User searching for current stock price of a company took ${time}ms (Status: ${response.status})`);
+    writeResult('E2E: User searching for current stock price of a company', time, response.status);    
+  });    
+}); 
