@@ -1,4 +1,9 @@
-2025-04-06T06:14:40.348Z - Disney ticker consistency across APIs: PASSED
-2025-04-06T06:14:41.623Z - Company AAPL exists in both APIs: PASSED
-2025-04-06T06:14:42.572Z - Company MSFT exists in both APIs: PASSED
-2025-04-06T06:14:43.123Z - Company GOOGL exists in both APIs: PASSED
+2025-04-06T06:49:28.355Z - Disney ticker is consistent across APIs: PASSED (200)
+2025-04-06T06:49:29.533Z - Company AAPL exists in both APIs: PASSED (200)
+2025-04-06T06:49:30.494Z - Company MSFT exists in both APIs: PASSED (200)
+2025-04-06T06:49:31.455Z - Company GOOGL exists in both APIs: PASSED (200)
+2025-04-06T06:49:32.115Z - Extracted ESG dates for Disney: 20 dates found, querying TradeTuah API for: 2025-03-01, 2025-03-27, 2025-02-01
+2025-04-06T06:49:33.979Z - Disney price for 2025-03-01: Error: Request failed with status code 500
+2025-04-06T06:49:35.781Z - Disney price for 2025-03-27: Error: Request failed with status code 500
+2025-04-06T06:49:37.616Z - Disney price for 2025-02-01: Error: Request failed with status code 500
+2025-04-06T06:49:37.618Z - ESG-Price correlation test: Completed
