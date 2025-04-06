@@ -1,4 +1,4 @@
-name: SENG3011 Performance Test
+name: SENG3011 Performance AND Functionality Test
 
 on:
   push:
