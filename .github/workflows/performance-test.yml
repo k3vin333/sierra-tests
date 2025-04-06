@@ -23,23 +23,33 @@ jobs:
       - name: Install root dependencies
         run: npm install
         
-      - name: Install stock API test dependencies
+      - name: Install TradeTuah API test dependencies
         run: npm install
         working-directory: tests/stock-tests
         
-      - name: Install ESG API test dependencies
+      - name: Install SIERRA Investments test dependencies
         run: npm install
         working-directory: tests/esg-tests
         
-      - name: Run stock API performance tests
+      - name: Install integration test dependencies
+        run: npm install
+        working-directory: tests/integration-tests
+        
+      - name: Run TradeTuah API performance tests
         run: npm test || echo "Tests failed but continuing workflow"
         working-directory: tests/stock-tests
         env:
           NODE_ENV: test
           
-      - name: Run ESG API performance tests
+      - name: Run SIERRA Investments performance tests
         run: npm test || echo "Tests failed but continuing workflow"
         working-directory: tests/esg-tests
+        env:
+          NODE_ENV: test
+          
+      - name: Run integration tests
+        run: npm test || echo "Tests failed but continuing workflow"
+        working-directory: tests/integration-tests
         env:
           NODE_ENV: test
       
@@ -53,7 +63,7 @@ jobs:
           echo "- Node.js v22.x" >> combined-results.md
           echo "" >> combined-results.md
           
-          echo "## Stock API Results" >> combined-results.md
+          echo "## TradeTuah API Results" >> combined-results.md
           echo '```' >> combined-results.md
           if [ -f tests/stock-tests/test-results.txt ]; then
             cat tests/stock-tests/test-results.txt >> combined-results.md
@@ -63,7 +73,7 @@ jobs:
           echo '```' >> combined-results.md
           echo "" >> combined-results.md
           
-          echo "## ESG API Results" >> combined-results.md
+          echo "## SIERRA Investments Results" >> combined-results.md
           echo '```' >> combined-results.md
           if [ -f tests/esg-tests/test-results.txt ]; then
             cat tests/esg-tests/test-results.txt >> combined-results.md
@@ -73,11 +83,21 @@ jobs:
           echo '```' >> combined-results.md
           echo "" >> combined-results.md
           
+          echo "## Integration Test Results" >> combined-results.md
+          echo '```' >> combined-results.md
+          if [ -f tests/integration-tests/integration-results.txt ]; then
+            cat tests/integration-tests/integration-results.txt >> combined-results.md
+          else
+            echo "No integration test results available" >> combined-results.md
+          fi
+          echo '```' >> combined-results.md
+          echo "" >> combined-results.md
+          
           echo "## Potential errors" >> combined-results.md
           echo "Some endpoints may experience errors at any point of testing:" >> combined-results.md
           echo "This is due to the API endpoint being modified or the API being down for any reason." >> combined-results.md
           echo "" >> combined-results.md
-          echo "### Stock API" >> combined-results.md
+          echo "### TradeTuah API" >> combined-results.md
           echo "- **Historical data endpoint**: May return 500 error" >> combined-results.md
           echo "- **Earnings endpoint**: May return 500 error" >> combined-results.md
           echo "" >> combined-results.md
@@ -89,7 +109,7 @@ jobs:
           echo "The automated tests measure both performance and functionality:" >> combined-results.md
           echo "" >> combined-results.md
           
-          echo "### Stock API Functionality" >> combined-results.md
+          echo "### TradeTuah API Functionality" >> combined-results.md
           echo "- **Overview endpoint**: Returns basic company information and summary" >> combined-results.md
           echo "- **Price endpoint**: Returns current and historical price data" >> combined-results.md
           echo "- **Options endpoint**: Returns options chain data" >> combined-results.md
@@ -100,7 +120,7 @@ jobs:
           echo "Success criteria: Each endpoint returns HTTP 200 with valid JSON data structure" >> combined-results.md
           echo "" >> combined-results.md
           
-          echo "### ESG API Functionality" >> combined-results.md
+          echo "### SIERRA Investments Functionality" >> combined-results.md
           echo "- **All ESG data endpoint**: Returns comprehensive dataset" >> combined-results.md
           echo "- **Company-specific ESG endpoint**: Returns ESG metrics for a specific ticker" >> combined-results.md
           echo "- **Score range search endpoint**: Returns companies within specified ESG score range" >> combined-results.md
@@ -108,6 +128,18 @@ jobs:
           echo "- **Company name search endpoint**: Returns ESG data for companies matching search term" >> combined-results.md
           echo "" >> combined-results.md
           echo "Success criteria: Each endpoint returns HTTP 200 with correctly structured data" >> combined-results.md
+          echo "" >> combined-results.md
+          
+          echo "## Integration Testing" >> combined-results.md
+          echo "Integration tests ensures data is consistent between the TradeTuah and SIERRA Investments APIs:" >> combined-results.md
+          echo "" >> combined-results.md
+          echo "### Disney Ticker Consistency" >> combined-results.md
+          echo "- Ensure that Disney (DIS) ticker is consistent across both TradeTuah and SIERRA Investments" >> combined-results.md
+          echo "- Confirm both TradeTuah and Sierra Investments APIs identify the company as Disney" >> combined-results.md
+          echo "" >> combined-results.md
+          echo "### Companies in SIERRA Investments exists in TradeTuah" >> combined-results.md
+          echo "- Tests if popular companies like Apple (AAPL), Microsoft (MSFT), and Google (GOOGL) exist in both APIs" >> combined-results.md
+          echo "- Verify ticker is consistent between TradeTuah and Sierra Investments API" >> combined-results.md
           echo "" >> combined-results.md
           
           echo "## Performance Analysis" >> combined-results.md
@@ -133,6 +165,7 @@ jobs:
           path: |
             tests/stock-tests/test-results.txt
             tests/esg-tests/test-results.txt
+            tests/integration-tests/integration-results.txt
           retention-days: 30
           
       - name: Upload PDF report
